@@ -3,210 +3,464 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>WebAssembly Explained</title>
+    <title>HTML Minifier - Fast & Powerful</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-      .hero {
-        background-color: #f8f9fa;
-        padding: 4rem 2rem;
-        margin-bottom: 2rem;
-        border-radius: .3rem;
+      :root {
+        --primary-color: #0d6efd;
+        --success-color: #198754;
+        --warning-color: #fd7e14;
+        --danger-color: #dc3545;
+      }
+      
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      
+      .main-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        margin: 2rem auto;
+        max-width: 1200px;
+      }
+      
+      .header {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px 20px 0 0;
+        text-align: center;
+      }
+      
+      .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      
+      .stats-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      }
+      
+      .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+      }
+      
+      .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+      
+      .code-area {
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        transition: border-color 0.3s ease;
+      }
+      
+      .code-area:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+      }
+      
+      .minify-btn {
+        background: linear-gradient(135deg, var(--success-color), #146c43);
+        border: none;
+        border-radius: 50px;
+        padding: 1rem 3rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
+      }
+      
+      .minify-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+        background: linear-gradient(135deg, #146c43, var(--success-color));
+      }
+      
+      .minify-btn:disabled {
+        background: #6c757d;
+        box-shadow: none;
+      }
+      
+      .progress-custom {
+        height: 8px;
+        border-radius: 10px;
+        background: #e9ecef;
+        overflow: hidden;
+      }
+      
+      .progress-bar-custom {
+        background: linear-gradient(90deg, var(--success-color), #20c997);
+        border-radius: 10px;
+        transition: width 0.6s ease;
+      }
+      
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(13, 110, 253, 0.1);
+        border: 1px solid rgba(13, 110, 253, 0.2);
+        border-radius: 8px;
+        padding: 0.5rem;
+        color: var(--primary-color);
+        transition: all 0.2s ease;
+      }
+      
+      .copy-btn:hover {
+        background: var(--primary-color);
+        color: white;
+      }
+      
+      .code-container {
+        position: relative;
+      }
+      
+      .alert-custom {
+        border-radius: 12px;
+        border: none;
+        padding: 1rem 1.5rem;
+      }
+      
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
       }
     </style>
   </head>
   <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container">
-        <a class="navbar-brand" href="#">WASM Explained</a>
-      </div>
-    </nav>
-
-    <div class="container">
-      <div class="hero">
-        <h1 class="display-4">WebAssembly (WASM)</h1>
-        <p class="lead">The future of high-performance applications on the web.</p>
-        <hr class="my-4">
-        <p>A binary instruction format for a stack-based virtual machine. WASM is designed as a portable compilation target for programming languages, enabling deployment on the web for client and server applications.</p>
+    <div class="main-container">
+      <div class="header">
+        <h1 class="display-5 mb-3">
+          <i class="bi bi-lightning-charge-fill me-2"></i>
+          HTML Minifier
+        </h1>
+        <p class="lead mb-0">Powered by Rust & WebAssembly for lightning-fast compression</p>
       </div>
 
-      <div class="row">
-        <div class="col-md-8">
-          <h2>What is WebAssembly?</h2>
-          <p>
-            WebAssembly (abbreviated Wasm) is an open standard that defines a portable binary-code format for executable programs, and a corresponding textual assembly language, as well as interfaces for facilitating interactions between such programs and their host environment.
-          </p>
-          <p>
-            The main goal of WebAssembly is to enable high-performance applications on web pages, but its format is designed to be executed and integrated in other environments as well, including standalone ones.
-          </p>
-
-          <h2 class="mt-4">Running Powerful Software in the Browser</h2>
-          <p>
-            Before WebAssembly, JavaScript was the only language that could run natively in browsers. While JavaScript is powerful, it wasn't designed for computationally intensive tasks like 3D games, computer-aided design, video editing, or scientific simulations.
-          </p>
-          <p>
-            Wasm provides a way to run code written in other languages, such as C, C++, and Rust, on the web at near-native speed. This opens the door for running powerful software directly in the browser, something that was previously impractical. Developers can now compile their existing C/C++ applications into a Wasm module and run it in the browser.
-          </p>
-          <ul>
-            <li><strong>Performance:</strong> Wasm is designed to be fast, efficient, and portable. It's encoded in a compact binary format that can be decoded and executed faster than JavaScript can be parsed.</li>
-            <li><strong>Portability:</strong> Run your code across modern browsers. Wasm is a standard and doesn't depend on any specific hardware or operating system.</li>
-            <li><strong>Security:</strong> Wasm runs in a sandboxed execution environment, enforcing the browser's same-origin policy and permission policies.</li>
-          </ul>
-        </div>
-        <div class="col-md-4">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Key Features</h5>
-              <ul class="list-unstyled">
-                <li><strong>Fast and Efficient</strong></li>
-                <li><strong>Safe and Secure</strong></li>
-                <li><strong>Language Independent</strong></li>
-                <li><strong>Hardware Independent</strong></li>
-                <li><strong>Open and Debuggable</strong></li>
-              </ul>
+      <div class="p-4">
+        <!-- Stats Row -->
+        <div class="row mb-4" id="stats-row" style="display: none;">
+          <div class="col-md-3 mb-3">
+            <div class="stats-card text-center">
+              <p class="stat-number text-primary" id="original-size">0</p>
+              <p class="stat-label">Original Size</p>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stats-card text-center">
+              <p class="stat-number text-success" id="minified-size">0</p>
+              <p class="stat-label">Minified Size</p>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stats-card text-center">
+              <p class="stat-number text-warning" id="bytes-saved">0</p>
+              <p class="stat-label">Bytes Saved</p>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stats-card text-center">
+              <p class="stat-number text-info" id="percentage-saved">0%</p>
+              <p class="stat-label">Size Reduction</p>
             </div>
           </div>
         </div>
-      </div>
 
-      <h2 class="mt-5">Browser Compatibility</h2>
-      <p>WebAssembly is supported by all major modern browsers.</p>
-      <table class="table table-bordered mt-3">
-        <thead>
-          <tr>
-            <th scope="col">Browser</th>
-            <th scope="col">Desktop Version</th>
-            <th scope="col">Mobile Version</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Google Chrome</td>
-            <td>57+</td>
-            <td>57+</td>
-          </tr>
-          <tr>
-            <td>Mozilla Firefox</td>
-            <td>52+</td>
-            <td>52+</td>
-          </tr>
-          <tr>
-            <td>Microsoft Edge</td>
-            <td>16+</td>
-            <td>N/A</td>
-          </tr>
-          <tr>
-            <td>Safari</td>
-            <td>11+</td>
-            <td>11+</td>
-          </tr>
-          <tr>
-            <td>Opera</td>
-            <td>44+</td>
-            <td>44+</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h2 class="mt-5">Try It Yourself!</h2>
-      <p class="lead">
-        Paste your HTML code into the input box below and click the "Minify" button to see the power of Rust and WebAssembly for high-speed minification.
-      </p>
-
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form-group">
-            <label for="html-input"><strong>Input HTML</strong></label>
-            <textarea id="html-input" class="form-control" rows="12" placeholder="<p>  Hello,    world!  </p>"></textarea>
+        <!-- Progress Bar -->
+        <div class="mb-4" id="progress-container" style="display: none;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted">Compression Progress</span>
+            <span class="text-muted" id="progress-text">0%</span>
+          </div>
+          <div class="progress-custom">
+            <div class="progress-bar-custom" id="progress-bar" style="width: 0%"></div>
           </div>
         </div>
-        <div class="col-md-6">
-          <div class="form-group">
-            <label for="html-output"><strong>Minified Output</strong></label>
-            <textarea id="html-output" class="form-control" rows="12" readonly></textarea>
+
+        <!-- Main Content -->
+        <div class="row">
+          <div class="col-lg-6 mb-4">
+            <div class="code-container">
+              <label for="html-input" class="form-label fw-bold mb-3">
+                <i class="bi bi-code-slash me-2"></i>Input HTML
+              </label>
+              <textarea 
+                id="html-input" 
+                class="form-control code-area" 
+                rows="16" 
+                placeholder="<!DOCTYPE html>
+<html>
+  <head>
+    <title>  My Page  </title>
+  </head>
+  <body>
+    <h1>   Hello World!   </h1>
+    <p>  This HTML will be minified  </p>
+  </body>
+</html>"
+              ></textarea>
+              <div class="mt-2 text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Paste your HTML code here to get started
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-6 mb-4">
+            <div class="code-container">
+              <label for="html-output" class="form-label fw-bold mb-3">
+                <i class="bi bi-file-earmark-zip me-2"></i>Minified Output
+              </label>
+              <textarea 
+                id="html-output" 
+                class="form-control code-area" 
+                rows="16" 
+                readonly
+                placeholder="Your minified HTML will appear here..."
+              ></textarea>
+              <button class="copy-btn btn btn-sm" id="copy-btn" style="display: none;" title="Copy to clipboard">
+                <i class="bi bi-clipboard"></i>
+              </button>
+              <div class="mt-2 text-muted small" id="output-info">
+                <i class="bi bi-arrow-left me-1"></i>
+                Minified code will appear here
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <button id="minify-btn" class="btn btn-primary mt-3">Minify HTML</button>
 
+        <!-- Action Button -->
+        <div class="text-center mb-4">
+          <button id="minify-btn" class="btn minify-btn btn-lg">
+            <span class="loading-spinner me-2" id="loading-spinner" style="display: none;"></span>
+            <i class="bi bi-play-fill me-2" id="play-icon"></i>
+            <span id="btn-text">Loading Minifier...</span>
+          </button>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alert-container"></div>
+      </div>
     </div>
-
-    <footer class="bg-dark text-white text-center p-3 mt-5">
-      <p>&copy; 2024 WebAssembly Explained</p>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script type="module">
-      console.log('Starting to load WASM module...');
-      
       // Import from local files
-      import init, { minify } from './minify_html_wasm.js';
-      console.log('WASM module imported successfully');
+      import init, { minify } from './wasm/minify_html_wasm.js';
 
-      async function run() {
-        console.log('Initializing WASM module...');
-        // Initialize the WASM module
-        await init();
-        console.log('WASM module initialized successfully');
+      // UI Elements
+      const minifyBtn = document.getElementById('minify-btn');
+      const btnText = document.getElementById('btn-text');
+      const playIcon = document.getElementById('play-icon');
+      const loadingSpinner = document.getElementById('loading-spinner');
+      const htmlInput = document.getElementById('html-input');
+      const htmlOutput = document.getElementById('html-output');
+      const copyBtn = document.getElementById('copy-btn');
+      const alertContainer = document.getElementById('alert-container');
+      const statsRow = document.getElementById('stats-row');
+      const progressContainer = document.getElementById('progress-container');
+      const outputInfo = document.getElementById('output-info');
+      
+      // Stats elements
+      const originalSizeEl = document.getElementById('original-size');
+      const minifiedSizeEl = document.getElementById('minified-size');
+      const bytesSavedEl = document.getElementById('bytes-saved');
+      const percentageSavedEl = document.getElementById('percentage-saved');
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
 
-        const minifyBtn = document.getElementById('minify-btn');
-        const htmlInput = document.getElementById('html-input');
-        const htmlOutput = document.getElementById('html-output');
-        const encoder = new TextEncoder();
-        const decoder = new TextDecoder();
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
 
-        console.log('Setting up click event listener...');
-        minifyBtn.addEventListener('click', () => {
-          console.log('Minify button clicked!');
-          const source = htmlInput.value;
-          console.log('Input HTML:', source);
-          
-          if (!source.trim()) {
-            console.log('No input provided');
-            htmlOutput.value = 'Please enter some HTML to minify.';
-            return;
-          }
-          
-          try {
-            console.log('Attempting to minify HTML...');
-            // Minify the HTML. The second argument is a config object.
-            // An empty object uses default settings.
-            const encoded = encoder.encode(source);
-            console.log('HTML encoded to bytes:', encoded);
-            
-            const minifiedBytes = minify(encoded, {});
-            console.log('Minification completed, result bytes:', minifiedBytes);
-            
-            const minified = decoder.decode(minifiedBytes);
-            console.log('Minified HTML:', minified);
-            
-            htmlOutput.value = minified;
-            console.log('Output updated successfully');
-          } catch (e) {
-            console.error('Minification error:', e);
-            htmlOutput.value = `Error: ${e.message}`;
-          }
-        });
-
-        // Enable the button now that the WASM module is ready
-        minifyBtn.disabled = false;
-        minifyBtn.textContent = 'Minify HTML';
-        console.log('Button enabled and ready to use');
+      // Utility functions
+      function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
       }
 
-      // Indicate that the minifier is loading
-      const minifyBtn = document.getElementById('minify-btn');
-      minifyBtn.disabled = true;
-      minifyBtn.textContent = 'Loading Minifier...';
-      console.log('Button disabled, starting initialization...');
+      function showAlert(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-custom fade-in`;
+        alertDiv.innerHTML = `
+          <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-2"></i>
+          ${message}
+        `;
+        alertContainer.innerHTML = '';
+        alertContainer.appendChild(alertDiv);
+        
+        setTimeout(() => {
+          alertDiv.remove();
+        }, 5000);
+      }
 
-      run().catch(err => {
-        console.error('Failed to load WASM module:', err);
-        minifyBtn.textContent = 'Minifier Failed to Load';
-        minifyBtn.classList.remove('btn-primary');
-        minifyBtn.classList.add('btn-danger');
+      function updateStats(originalSize, minifiedSize) {
+        const bytesSaved = originalSize - minifiedSize;
+        const percentageSaved = originalSize > 0 ? ((bytesSaved / originalSize) * 100) : 0;
+        
+        originalSizeEl.textContent = formatBytes(originalSize);
+        minifiedSizeEl.textContent = formatBytes(minifiedSize);
+        bytesSavedEl.textContent = formatBytes(bytesSaved);
+        percentageSavedEl.textContent = percentageSaved.toFixed(1) + '%';
+        
+        // Show stats with animation
+        statsRow.style.display = 'flex';
+        statsRow.classList.add('fade-in');
+        
+        // Animate progress bar
+        progressContainer.style.display = 'block';
+        progressContainer.classList.add('fade-in');
+        
+        setTimeout(() => {
+          progressBar.style.width = percentageSaved.toFixed(1) + '%';
+          progressText.textContent = percentageSaved.toFixed(1) + '%';
+        }, 100);
+      }
+
+      function setButtonState(state) {
+        switch (state) {
+          case 'loading':
+            minifyBtn.disabled = true;
+            loadingSpinner.style.display = 'inline-block';
+            playIcon.style.display = 'none';
+            btnText.textContent = 'Loading Minifier...';
+            break;
+          case 'processing':
+            minifyBtn.disabled = true;
+            loadingSpinner.style.display = 'inline-block';
+            playIcon.style.display = 'none';
+            btnText.textContent = 'Minifying...';
+            break;
+          case 'ready':
+            minifyBtn.disabled = false;
+            loadingSpinner.style.display = 'none';
+            playIcon.style.display = 'inline-block';
+            btnText.textContent = 'Minify HTML';
+            break;
+          case 'error':
+            minifyBtn.disabled = true;
+            loadingSpinner.style.display = 'none';
+            playIcon.style.display = 'none';
+            btnText.textContent = 'Minifier Failed';
+            minifyBtn.classList.remove('minify-btn');
+            minifyBtn.classList.add('btn-danger');
+            break;
+        }
+      }
+
+      // Copy functionality
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(htmlOutput.value);
+          copyBtn.innerHTML = '<i class="bi bi-check"></i>';
+          setTimeout(() => {
+            copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
+          }, 2000);
+          showAlert('Copied to clipboard!', 'success');
+        } catch (err) {
+          showAlert('Failed to copy to clipboard', 'danger');
+        }
       });
+
+      async function run() {
+        try {
+          // Initialize the WASM module
+          await init();
+          
+          minifyBtn.addEventListener('click', async () => {
+            const source = htmlInput.value;
+            
+            if (!source.trim()) {
+              showAlert('Please enter some HTML to minify.', 'warning');
+              htmlInput.focus();
+              return;
+            }
+            
+            setButtonState('processing');
+            
+            try {
+              // Add small delay for UX
+              await new Promise(resolve => setTimeout(resolve, 300));
+              
+              const encoded = encoder.encode(source);
+              const minifiedBytes = minify(encoded, {});
+              const minified = decoder.decode(minifiedBytes);
+              
+              htmlOutput.value = minified;
+              
+              // Update stats
+              updateStats(encoded.length, minifiedBytes.length);
+              
+              // Show copy button
+              copyBtn.style.display = 'block';
+              outputInfo.innerHTML = '<i class="bi bi-check-circle me-1 text-success"></i>Minification complete!';
+              
+              showAlert(`Successfully minified! Saved ${formatBytes(encoded.length - minifiedBytes.length)} (${((encoded.length - minifiedBytes.length) / encoded.length * 100).toFixed(1)}%)`, 'success');
+              
+            } catch (e) {
+              console.error('Minification error:', e);
+              htmlOutput.value = '';
+              showAlert(`Minification failed: ${e.message}`, 'danger');
+              outputInfo.innerHTML = '<i class="bi bi-exclamation-triangle me-1 text-danger"></i>Minification failed';
+            }
+            
+            setButtonState('ready');
+          });
+
+          // Enable the button now that the WASM module is ready
+          setButtonState('ready');
+          showAlert('Minifier loaded and ready to use!', 'success');
+          
+        } catch (err) {
+          console.error('Failed to load WASM module:', err);
+          setButtonState('error');
+          showAlert('Failed to load the minifier. Please refresh the page and try again.', 'danger');
+        }
+      }
+
+      // Initialize
+      setButtonState('loading');
+      run();
     </script>
   </body>
 </html> 

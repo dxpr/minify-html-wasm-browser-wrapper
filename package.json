@@ -1,0 +1,25 @@
+{
+  "name": "wasm-minify-demo",
+  "version": "1.0.0",
+  "description": "WebAssembly HTML minifier demo with Bootstrap 5 landing page",
+  "type": "module",
+  "scripts": {
+    "install-wasm": "node scripts/install-wasm.js",
+    "dev": "npm run install-wasm && python3 -m http.server 8081",
+    "serve": "python3 -m http.server 8081",
+    "build": "npm run install-wasm"
+  },
+  "dependencies": {
+    "@minify-html/wasm": "^0.16.4"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "webassembly",
+    "wasm",
+    "html-minifier",
+    "rust",
+    "bootstrap"
+  ],
+  "author": "",
+  "license": "MIT"
+} 
