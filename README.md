@@ -10,6 +10,10 @@ A Bootstrap 5 landing page demonstrating WebAssembly technology with an interact
 - 🎨 **Modern UI**: Built with Bootstrap 5 for a clean, responsive design
 - 📊 **Browser Compatibility Table**: Shows WASM support across browsers
 
+![image](https://github.com/user-attachments/assets/3fc3fd30-bd18-4b79-b9e4-2d665196e829)
+  
+
+
 ## Quick Start
 
 ### Prerequisites
